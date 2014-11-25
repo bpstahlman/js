@@ -1,3 +1,96 @@
+function Mixed(whole, numer, denom) {
+    this.w = whole;
+    this.n = numer;
+    this.d = denom;
+    // If fraction can be approximated to one with "nice" denom, pctErr represents the % error.
+    this.pctErr = undefined;
+    // floatVal will be set if and only if fraction can't be made "nice".
+    this.floatVal = undefined
+    this.normalize();
+}
+Mixed.prototype = {
+    niceDenoms: [2, 3, 4, 5, 8],
+    acceptablePctErr: 5,
+    normalize: function() {
+        // Convert mixed number to (potentially improper) fraction.
+        this.n = this.w * this.d + this.n;
+        // Scale it by newCnt/oldCnt, also as (potentially improper) fraction
+        this.n *= newCnt;
+        this.d *= oldCnt;
+        // Reduce the fraction if possible.
+        var gcf = this.gcf(this.n, this.d);
+        if (gcf > 1) {
+            this.n /= gcf;
+            this.d /= gcf;
+        }
+        // TODO: Do the following only for certain nice denominators; else convert to float val and
+        // fall-through...
+        // Convert to (potentially) mixed number.
+        if (this.n === this.d) {
+            this.w = 1;
+            this.n = this.d = undefined;
+        } else if (this.d === 1) {
+            this.w = this.n;
+            this.n = this.d = undefined;
+        } else {
+            // Approximate if denom not nice.
+            if (this.niceDenoms.indexOf(this.d) === -1) {
+                this.approximate();
+            }
+            // Even if approximation failed, convert back to proper mixed form.
+            if (this.n > this.d) {
+                // Improper fraction.
+                this.w = Math.floor(this.n / this.d);
+                this.n = this.n % this.d;
+            }
+        }
+    },
+    approximate: function() {
+        var denoms = this.niceDenoms,
+            ln = denoms.length;
+        for (var i = 0; i < ln; i++) {
+            var d = denoms[i],
+                dRatio = this.d / d,
+                nApprox = this.n / dRatio,
+                nApproxInt = Math.round(nApprox),
+                nErr = Math.abs(nApprox - nApproxInt),
+                pctErr = Math.round(100 * nErr / d);
+            // This is approximation.
+            if (pctErr < this.acceptablePctErr) {
+                this.d = d;
+                this.n = nApproxInt;
+                this.pctErr = pctErr;
+                return true;
+            }
+        }
+        // Didn't find good approximation. Use float.
+        this.floatVal = this.d / this.n;
+    },
+    // Greatest common factor of 2 input numbers
+    gcf: function(n1, n2) {
+        var ns = n1 > n2 ? [n1, n2] : [n2, n1];
+        var rem;
+        while (rem = ns[0] % ns[1]) {
+            ns.shift();
+            ns.push(rem);
+        }
+        return ns[1];
+    },
+    toString: function() {
+        if (this.floatVal !== undefined) {
+            return Number(value).toFixed(1).replace(/\.0+$/, '');
+        } else {
+            if (this.n === undefined) {
+                // Pure integer - not mixed number
+                return this.w + "";
+            } else {
+                // (Potentially-mixed) fraction
+                return (this.w ? this.w + " ": "") + this.n + "/" + this.d;
+            }
+        }
+    }
+};
+
 function Scaler() {
     this.regex = this.buildRegex();
 }
@@ -81,16 +174,6 @@ Scaler.prototype = {
             // reasons.
             return Number(value).toFixed(1).replace(/\.0+$/, '') + ' ' + p6;
         });
-    },
-    // Greatest common factor of 2 input numbers
-    gcf: function(n1, n2) {
-        var ns = n1 > n2 ? [n1, n2] : [n2, n1];
-        var rem;
-        while (rem = ns[0] % ns[1]) {
-            ns.shift();
-            ns.push(rem);
-        }
-        return ns[1];
     }
 };
 // vim:ts=4:sw=4:et:tw=120
