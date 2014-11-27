@@ -119,11 +119,26 @@ function Scaler() {
 }
 Scaler.prototype = {
     units: [
-        '(?:tsp|teaspoon)s?',
-        'tbs|tablespoons?',
+        // Source: http://en.wikibooks.org/wiki/Cookbook:Units_of_measurement
+        // Note: Erring on side of allowing technically incorrect formats: e.g.,
+        // "tsps" (no "." and trailing "s")
+        // Volume
+        't|tsps?|teaspoons?',
+        'tbl|tbs|tbsps?|tablespoons?',
+        '(?:(?:fl|fluid)\\s+)?(?:oz|ounces?)',
+        'gills?',
         'c|cups?',
-        '(?:qt|quart)s?'
-        // TODO: Add additional units
+        '(?:(?:fl|fluid)\\s+)?(?:p|pts?|pints?)',
+        '(?:(?:fl|fluid)\\s+)?(?:q|qts?|quarts?)',
+        'g|gals?|gallons?',
+        'ml?|milliliters?|millilitres?|cc',
+        'l|liters?|litres?',
+        'dl|deciliters?|decilitres?',
+        // Mass and Weight
+        'lbs?|#|pounds?',
+        'mg|milligrams?|milligrammes?',
+        'g|grams?|grammes?',
+        'kgs?|kilograms?|kilogrammes?'
     ],
     buildRegex: function() {
         // Pattern definitions:
