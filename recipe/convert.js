@@ -68,16 +68,17 @@ Fraction.prototype = {
     // Return: true indicates approximation performed, in which case this.pctErr gives error.
     approximate: function() {
         var denoms = this.niceDenoms,
-            ln = denoms.length;
+            ln = denoms.length,
+            exact = this.n / this.d;
         for (var i = 0; i < ln; i++) {
             var d = denoms[i],
                 dRatio = this.d / d,
                 nApprox = this.n / dRatio,
                 nApproxInt = Math.round(nApprox),
                 nErr = Math.abs(nApprox - nApproxInt),
-                pctErr = Math.round(100 * nErr / d);
+                pctErr = Math.round(100 * nErr / d / exact);
             // This is approximation.
-            // Design Decision: Don't allow approximation to result in 0.
+            // Design Decision: Don't accept 0 as approximation.
             if (nApproxInt && pctErr < this.acceptablePctErr) {
                 this.d = d;
                 this.n = nApproxInt;
